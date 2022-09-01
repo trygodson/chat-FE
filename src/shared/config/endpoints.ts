@@ -1,5 +1,5 @@
-// export const BASE_URL = 'http://dweller.techleeds.africa/api/';
-export const BASE_URL = 'http://localhost:5050';
+export const BASE_URL = 'https://chatter-be.herokuapp.com';
+// export const BASE_URL = 'http://localhost:5050';
 
 export const ApiEndpoints = {
   //Auth
