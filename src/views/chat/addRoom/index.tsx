@@ -49,7 +49,7 @@ const AddRoom: React.FC<AddRoomProps> = ({ modalOpen, setModalOpen, setRooms }) 
   };
   return (
     <DModal modalOpen={modalOpen} setModalOpen={setModalOpen}>
-      <form className="flex flex-col w-52 h-80" onSubmit={onSubmit}>
+      <form className="flex flex-col w-80 h-80 justify-center items-center" onSubmit={onSubmit}>
         <div className="mb-3 font-semibold text-sm">Create a Room</div>
         <input
           type={'text'}
@@ -67,7 +67,7 @@ const AddRoom: React.FC<AddRoomProps> = ({ modalOpen, setModalOpen, setRooms }) 
           }
           isSearchable
           placeholder="Search Users"
-          isMulti={true}
+          isMulti
         />
         <button type="submit" className="px-2 py-1 bg-blue-300 hover:bg-blue-600 mt-3">
           {isLoading ? 'Loading...' : 'Create'}
