@@ -1,5 +1,5 @@
 import { useMutation } from 'react-query';
-import { AuthResponse, CreateRoomInputModel, GetAllRoomResponse } from '../../models';
+import { AuthResponse, CreateRoomInputModel, GetAllRoomResponse, RoomResponse } from '../../models';
 import { ApiEndpoints } from '../../shared/config/endpoints';
 import api from '../../shared/utils/api';
 
@@ -7,7 +7,7 @@ async function CreateRoom(value: CreateRoomInputModel) {
   const response = (await api.post({
     url: `${ApiEndpoints.CREATE_ROOM}`,
     variables: value,
-  })) as any;
+  })) as RoomResponse;
 
   return response;
 }

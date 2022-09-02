@@ -20,7 +20,7 @@ const SingleRoom: React.FC<SingleRoomProps> = ({ room, selectedRoom, setSelected
       </div>
       <div className="flex">
         <p className="font-bold mr-2">Users</p>
-        {room.users.map((user) => (
+        {room?.users?.map((user) => (
           <span className="mx-1 " key={user._id}>
             {user.username}
           </span>

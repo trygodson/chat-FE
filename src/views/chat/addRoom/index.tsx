@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
+import { useSocket } from '../../../application/context/socketContext';
 import { CreateRoomInputModel } from '../../../models';
 import { useAllUserService } from '../../../services/api/authService';
 import roomService from '../../../services/api/roomService';
 
 import { DModal } from '../../../shared/components';
+import { EVENTS } from '../../../shared/utils/socketevents';
 
 interface AddRoomProps {
   modalOpen: boolean;
@@ -16,6 +18,7 @@ interface Options {
   value: string;
 }
 const AddRoom: React.FC<AddRoomProps> = ({ modalOpen, setModalOpen, setRooms }) => {
+  const { socket } = useSocket();
   const [options, setOptions] = useState<Options[]>();
   const [name, setName] = useState('');
   const [optionChange, setOptionChange] = useState<string[] | undefined>();
@@ -24,7 +27,6 @@ const AddRoom: React.FC<AddRoomProps> = ({ modalOpen, setModalOpen, setRooms }) 
   useEffect(() => {
     (async function () {
       const res = await GetAllUsers();
-      console.log(res);
       res.map((item) => {
         setOptions((prev) =>
           prev
@@ -43,6 +45,7 @@ const AddRoom: React.FC<AddRoomProps> = ({ modalOpen, setModalOpen, setRooms }) 
     } as CreateRoomInputModel;
     const res = await CreateRoom(values);
     if (res) {
+      socket?.emit(EVENTS.CLIENT.CREATE_ROOM, { createdRoom: res });
       setModalOpen(false);
       setRooms((prev: []) => (prev ? [...prev] : [...prev]));
     }
@@ -61,9 +64,9 @@ const AddRoom: React.FC<AddRoomProps> = ({ modalOpen, setModalOpen, setRooms }) 
         <Select
           options={options}
           onChange={(val) =>
-            val.map((item) =>
-              setOptionChange((prev) => (prev ? [...prev, item.value] : [item.value])),
-            )
+            val.map((item) => {
+              setOptionChange((prev) => (prev ? [...prev, item.value] : [item.value]));
+            })
           }
           isSearchable
           placeholder="Search Users"

@@ -3,25 +3,26 @@ import {
   AllMessageResponse,
   CreateMessageInputModel,
   GetMessageInputModel,
+  MessageResponse,
   RoomResponse,
 } from '../../../models';
 import messageService from '../../../services/api/messageService';
-import { io, Socket } from 'socket.io-client';
 import { BASE_URL } from '../../../shared/config/endpoints';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { useAppSelector } from '../../../application/store';
 import { EVENTS } from '../../../shared/utils/socketevents';
+import { useSocket } from '../../../application/context/socketContext';
 
 interface ChatAreaProps {
-  selectedRoom: RoomResponse | undefined;
+  // selectedRoom: RoomResponse | undefined;
 }
-const ChatArea: React.FC<ChatAreaProps> = ({ selectedRoom }) => {
+const ChatArea: React.FC<ChatAreaProps> = ({}) => {
+  const { socket, selectedRoom } = useSocket();
   const { user } = useAppSelector((state) => state.login);
   const scrollRef = useRef<any>();
-  let socket = useRef<Socket<DefaultEventsMap, DefaultEventsMap>>();
   const [messages, setMessages] = useState<AllMessageResponse>();
   const [newmessage, setNewmessage] = useState('');
-  const [arrivalMessage, setArrivalMessage] = useState(null);
+  const [arrivalMessage, setArrivalMessage] = useState<AllMessageResponse>();
   const { mutateAsync: GetAllMessages, isLoading } = messageService.useGetAllMessageService();
   const { mutateAsync: SendAMessage, isLoading: SendAMessageLoading } =
     messageService.useAddMessageService();
@@ -35,10 +36,10 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedRoom }) => {
     return colors[Math.floor(Math.random() * 5)];
   };
 
-  useEffect(() => {
-    socket.current = io(BASE_URL);
-    socket.current.emit('room', selectedRoom?._id);
-  }, [selectedRoom]);
+  // useEffect(() => {
+  //   socket.current = io(BASE_URL);
+  //   socket.current.emit('room', selectedRoom?._id);
+  // }, [selectedRoom]);
   useEffect(() => {
     (async function () {
       let room = { toroom: selectedRoom?._id } as GetMessageInputModel;
@@ -46,19 +47,23 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedRoom }) => {
       setMessages(res);
     })();
   }, [selectedRoom]);
+
   useEffect(() => {
-    if (socket.current) {
-      socket.current.on('msg-recieve', (msg) => {
-        setArrivalMessage(msg);
+    if (socket) {
+      socket.on('msg-recieve', (msg: MessageResponse) => {
+        setArrivalMessage((prev) => (prev ? [...prev, msg] : [msg]));
       });
     }
-  }, [socket.current]);
+  }, [socket]);
+
+  //Auto Scroll Down
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
-    arrivalMessage && setMessages((prev) => (prev ? [...prev, arrivalMessage] : [arrivalMessage]));
+    arrivalMessage &&
+      setMessages((prev) => (prev ? [...prev, ...arrivalMessage] : [...arrivalMessage]));
   }, [arrivalMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,9 +75,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedRoom }) => {
     const res = await SendAMessage(payload);
 
     if (res.message === 'sent') {
-      socket.current!.emit('send-msg', {
-        to: selectedRoom?._id,
-        messages: newmessage,
+      socket!.emit('send-msg', {
+        sender: { username: user.username },
+        message: newmessage,
       });
       const msgs = [...messages!];
       msgs.push({ message: { text: newmessage }, sender: { username: user.username } });

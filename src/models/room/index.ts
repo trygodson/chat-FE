@@ -6,7 +6,7 @@ export interface CreateRoomInputModel {
 export type GetAllRoomResponse = RoomResponse[];
 
 export interface RoomResponse {
-  _id: string;
+  _id?: string;
   name: string;
   userId: string;
   users: User[];
