@@ -9,6 +9,9 @@ const item = GET_STORAGE_ITEM('user') as AuthResponse;
 const headers: AxiosRequestHeaders = {
   'Content-Type': 'application/json',
   Authorization: item ? `Bearer ${item?.token}` : '',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Origin, Content-Type, X-Auth-Token',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
 };
 
 const errorr = {
@@ -33,6 +36,7 @@ const api = (api: apiParams) => {
       headers: headers,
       params: api.method === 'get' ? api.variables : undefined,
       data: api.method !== 'get' ? api.variables : undefined,
+      withCredentials: true,
     }).then(
       (response) => {
         resolve(response?.data);
