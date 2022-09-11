@@ -10,7 +10,6 @@ const headers: AxiosRequestHeaders = {
   'Content-Type': 'application/json',
   Authorization: item ? `Bearer ${item?.token}` : '',
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Origin, Content-Type, X-Auth-Token',
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
 };
 
