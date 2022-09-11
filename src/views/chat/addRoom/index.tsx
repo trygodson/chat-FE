@@ -4,7 +4,6 @@ import { useSocket } from '../../../application/context/socketContext';
 import { CreateRoomInputModel } from '../../../models';
 import { useAllUserService } from '../../../services/api/authService';
 import roomService from '../../../services/api/roomService';
-
 import { DModal } from '../../../shared/components';
 import { EVENTS } from '../../../shared/utils/socketevents';
 
@@ -63,11 +62,12 @@ const AddRoom: React.FC<AddRoomProps> = ({ modalOpen, setModalOpen, setRooms }) 
         />
         <Select
           options={options}
-          onChange={(val) =>
-            val.map((item) => {
-              setOptionChange((prev) => (prev ? [...prev, item.value] : [item.value]));
-            })
-          }
+          onChange={(val) => {
+            const rr = val.map((item) => {
+              return item.value;
+            });
+            console.log(rr);
+          }}
           isSearchable
           placeholder="Search Users"
           isMulti

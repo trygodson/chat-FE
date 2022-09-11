@@ -30,7 +30,6 @@ const AllRoomAreas: React.FC<AllRoomAreasProps> = ({}) => {
   useEffect(() => {
     getall();
   }, []);
-  console.log(rooms);
   return (
     <>
       <div className={`w-full h-full px-3 py-5 ${'flex justify-center items-center'}`}>
@@ -51,8 +50,8 @@ const AllRoomAreas: React.FC<AllRoomAreasProps> = ({}) => {
             {rooms!.map((room) => {
               return (
                 <SingleRoom
-                  room={room}
                   key={room._id}
+                  room={room}
                   setSelectedRoom={setSelectedRoom}
                   selectedRoom={selectedRoom}
                 />

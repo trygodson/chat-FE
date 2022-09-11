@@ -7,10 +7,7 @@ import {
   RoomResponse,
 } from '../../../models';
 import messageService from '../../../services/api/messageService';
-import { BASE_URL } from '../../../shared/config/endpoints';
-import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { useAppSelector } from '../../../application/store';
-import { EVENTS } from '../../../shared/utils/socketevents';
 import { useSocket } from '../../../application/context/socketContext';
 
 interface ChatAreaProps {
@@ -22,7 +19,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({}) => {
   const scrollRef = useRef<any>();
   const [messages, setMessages] = useState<AllMessageResponse>();
   const [newmessage, setNewmessage] = useState('');
-  const [arrivalMessage, setArrivalMessage] = useState<AllMessageResponse>();
+  const [arrivalMessage, setArrivalMessage] = useState<MessageResponse>();
   const { mutateAsync: GetAllMessages, isLoading } = messageService.useGetAllMessageService();
   const { mutateAsync: SendAMessage, isLoading: SendAMessageLoading } =
     messageService.useAddMessageService();
@@ -43,6 +40,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({}) => {
   useEffect(() => {
     (async function () {
       let room = { toroom: selectedRoom?._id } as GetMessageInputModel;
+      socket!.emit('client-entered-room', { room: selectedRoom?._id });
       const res = await GetAllMessages(room);
       setMessages(res);
     })();
@@ -50,8 +48,13 @@ const ChatArea: React.FC<ChatAreaProps> = ({}) => {
 
   useEffect(() => {
     if (socket) {
-      socket.on('msg-recieve', (msg: MessageResponse) => {
-        setArrivalMessage((prev) => (prev ? [...prev, msg] : [msg]));
+      socket.on('msg-recieve', (msg) => {
+        const { message, sender } = msg;
+        console.log(msg);
+        setArrivalMessage({
+          message: { text: message.text },
+          sender: { username: sender.username },
+        });
       });
     }
   }, [socket]);
@@ -63,7 +66,13 @@ const ChatArea: React.FC<ChatAreaProps> = ({}) => {
 
   useEffect(() => {
     arrivalMessage &&
-      setMessages((prev) => (prev ? [...prev, ...arrivalMessage] : [...arrivalMessage]));
+      setMessages((prev) => [
+        ...prev!,
+        {
+          message: { text: arrivalMessage.message.text },
+          sender: { username: arrivalMessage.sender.username },
+        },
+      ]);
   }, [arrivalMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,8 +85,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({}) => {
 
     if (res.message === 'sent') {
       socket!.emit('send-msg', {
+        room: selectedRoom?._id,
         sender: { username: user.username },
-        message: newmessage,
+        message: { text: newmessage },
       });
       const msgs = [...messages!];
       msgs.push({ message: { text: newmessage }, sender: { username: user.username } });
@@ -105,10 +115,11 @@ const ChatArea: React.FC<ChatAreaProps> = ({}) => {
                       className={`w-full flex ${
                         message.sender.username === user.username && 'justify-end'
                       }`}
+                      key={i}
                     >
-                      <div className="flex bg-slate-100 my-1 rounded pl-2 pr-1 w-1/2" key={i}>
+                      <div className="flex bg-slate-100 my-1 rounded pl-2 pr-1 w-1/2">
                         <span className={`mr-2 ${randomcolor()}`}>{message.sender.username}</span>
-                        <span>{message.message.text}</span>
+                        <span>{message?.message?.text}</span>
                       </div>
                     </div>
                   );
